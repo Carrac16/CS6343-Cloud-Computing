@@ -1,4 +1,14 @@
 FROM python:3
+
+WORKDIR /
+
 ADD . /
-RUN pip install -r requirements.txt
-CMD ["python", "-m flask run"]
+
+ENV FLASK_ENV development
+
+RUN apt-get -y update
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]
