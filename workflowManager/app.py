@@ -13,7 +13,9 @@ deployed_services = []
 
 def deployed(object):
     for service in deployed_services:
-        return service["image"] == object["image"]
+        if service["image"] == object["image"]:
+            return True
+    return False
 
 @app.route('/start', methods=['POST'])
 def start_workflow():
@@ -23,6 +25,8 @@ def start_workflow():
 
         workflow_list = data['workflow']
         print(f'workflow list: {workflow_list}')
+
+        already_deployed = []
 
         for component in workflow_list:
             if not deployed(component):
@@ -34,9 +38,12 @@ def start_workflow():
                 deployed_services.append(component)
                 print(f'Started service {component["image"]} with {replicas} replicas')
             else:
+                already_deployed.append(component["image"])
                 print(f'Service {component["image"]} has already been started')
 
         print('Data Received: "{data}"'.format(data=data))
+        if already_deployed:
+            return f"Services were already deployed: {already_deployed}\n"
         return "Request Processed.\n"
 
 
