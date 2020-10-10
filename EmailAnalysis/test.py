@@ -32,7 +32,7 @@ def process_emails():
   hamWordCounter = 0
 
   if not email_list:
-      return "Database is empty"
+      return "Database is empty\n"
 
   for item in email_list:
     if item['is_spam'] == False:
