@@ -21,6 +21,20 @@ client.shutdown();
 const getQuery = "Select * From emails;";
 const addQuery = "Insert into emails (id, sender, subject, content, is_spam) values (?, ?, ?, ?, ?);";
 const createQuery = "Create Columnfamily emails (id text, sender text, subject text, content text, is_spam boolean, Primary Key(id));";
+const removeQuery = "Truncate emails;";
+
+router.get('/clearTable', (req, res) => {
+        client2.execute(removeQuery, [], {prepare: true}, function (err, result) {
+                if (err) {
+                        console.log('error clearing table: ', err);
+                        res.send({error: err});
+                } else {
+                        console.log('table cleared');
+                        res.send({success: true});
+                }
+                return;
+        });
+});
 
 router.get('/createTable', (req, res) => {
         client2.execute(createQuery, [], {prepare: true}, function(err, result) {
@@ -54,7 +68,7 @@ router.post('/addEmail', (req, res) => {
         client2.execute(addQuery, [req.body.id, req.body.sender, req.body.subject, req.body.content, req.body.is_spam], {prepare: true}, function(err, result) {
                 if (err) {
                         console.log('error adding email to db: ', err);
-                        res.send({success: false});
+                        res.send({error: err});
                 } else {
                         console.log('email added to db');
                         res.send({success: true});
