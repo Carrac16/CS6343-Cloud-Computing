@@ -27,11 +27,7 @@ def deploy_component(component):
     print(f'Started service {component["image"]} with {replicas} replicas')
 
 def deployed(object):
-    deployed_services = client.services.list()
-    for service in deployed_services:
-        if service["name"] == object["name"]:
-            return True
-    return False
+    return bool(client.services.list(filters={ "name": object["name"] }))
 
 def get_next_services(wfid, current):
     workflow = deployed_workflows[wfid] # get_workflow(wfid)
