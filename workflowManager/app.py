@@ -10,7 +10,13 @@ app = Flask(__name__)
 client = docker.from_env()
 replicas = 3
 
-deployed_workflows = []
+deployed_workflows = {}
+
+def get_workflow(wfid):
+    for workflow in deployed_workflows:
+        if workflow['id'] == wfid:
+            return workflow
+    return False
 
 def deploy_component(component):
     endpoint_spec = None
@@ -23,9 +29,20 @@ def deploy_component(component):
 def deployed(object):
     deployed_services = client.services.list()
     for service in deployed_services:
-        if service["image"] == object["image"]:
+        if service["name"] == object["name"]:
             return True
     return False
+
+def get_next_services(wfid, current):
+    workflow = deployed_workflows[wfid] # get_workflow(wfid)
+    if not workflow:
+        return []
+
+    for component in workflow:
+        if component['service']['name'] == current:
+            return component['next']
+
+    return []
 
 
 @app.route('/start', methods=['POST'])
@@ -34,19 +51,29 @@ def start_workflow():
 
         data = request.get_json(force=True)  # always try to parse data as JSON
 
-        workflow_id = uuid.uuid4()
+        workflow_id = str(uuid.uuid4())
         workflow_list = data['workflow']
         print(f'workflow list: {workflow_list}')
 
         for component in workflow_list:
-            if not deployed(component):
-                deploy_component(compnent)
+            service = component['service']
+            if not deployed(service):
+                deploy_component(service)
 
-        deployed_workflows.append({ "id": workflow_id, "workflow": workflow_list })
+        deployed_workflows[workflow_id] = workflow_list
 
-        print('Data Received: "{data}"'.format(data=data))
         return workflow_id
 
+
+@app.route('/next', methods=['POST'])
+def next_service():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        workflow_id = data['workflow_id']
+        current_service = data['service_name']
+
+        return str(get_next_services(workflow_id, current_service))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=6000)
