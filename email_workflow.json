@@ -1,0 +1,41 @@
+{
+  "workflow": [
+    {
+      "service": {
+        "image": "treylewis/emaildbcomp",
+        "name": "email_to_db",
+        "networks": ["attachable_overlay_network"],
+        "port": 8080
+      },
+      "next": []
+    },
+    {
+      "service": {
+        "image": "matthewp76/emailserver",
+        "name": "emailserver",
+        "networks": ["attachable_overlay_network"],
+        "tty": true
+      },
+      "next": ["spamdetection"]
+    },
+    {
+      "service": {
+        "image": "matthewp76/spamdetection",
+        "name": "spamdetection",
+        "networks": ["attachable_overlay_network"],
+        "tty": true
+      },
+      "next": ["email_to_db", "emailanalysis:6001"]
+    },
+    {
+      "service": {
+        "image": "liamlan/email_analysis",
+        "name": "emailanalysis",
+        "networks": ["attachable_overlay_network"],
+        "port": 6001,
+        "mounts": ["/var/run/docker.sock:/var/run/docker.sock:rw"]
+      },
+      "next": []
+    }
+  ]
+}
