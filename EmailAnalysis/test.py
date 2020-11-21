@@ -102,7 +102,7 @@ def process_emails(flow_id):
 # def get_stats():
 #     return process_emails()
 
-@app.route('/data', methods = ['POST'])
+@app.route('/', methods = ['POST'])
 def get_data():
   data = requests.json
   flow = data["flow_id"]
