@@ -16,7 +16,13 @@
         "networks": ["attachable_overlay_network"],
         "tty": true
       },
-      "next": ["spamdetection"]
+      "next": [
+        {
+          "address": "0.0.0.0",
+          "port": 5002,
+          "requestType": "NONE"
+        }
+      ]
     },
     {
       "service": {
@@ -25,7 +31,18 @@
         "networks": ["attachable_overlay_network"],
         "tty": true
       },
-      "next": ["email_to_db", "emailanalysis:6001"]
+      "next": [
+        {
+          "address": "http://cluster5-2.utdallas.edu",
+          "port": 8080,
+          "requestType": "POST"
+        },
+        {
+          "address": "0.0.0.0",
+          "port": 6001,
+          "requestType": "POST"
+        }
+      ]
     },
     {
       "service": {
