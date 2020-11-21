@@ -46,9 +46,10 @@ def start_workflow():
     if request.method == 'POST':
 
         data = request.get_json(force=True)  # always try to parse data as JSON
-
+        workflow = data['workflow']
         workflow_id = str(uuid.uuid4())
-        workflow_list = data['workflow']
+        entrypoint = workflow['entrypoint']
+        workflow_list = workflow['components']
         print(f'workflow list: {workflow_list}')
 
         for component in workflow_list:
@@ -58,7 +59,7 @@ def start_workflow():
 
         deployed_workflows[workflow_id] = workflow_list
 
-        return workflow_id
+        return { "workflow_id": workflow_id, "entrypoint": entrypoint }
 
 
 @app.route('/next', methods=['POST'])
