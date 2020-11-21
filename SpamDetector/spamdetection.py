@@ -1,23 +1,19 @@
 import math
-import os
-import timeit
-from collections import Counter
 import pickle
 import socketserver
-import sys
+import requests
+import time
+import json
+
 
 TRAINED_DATA_FILE = 'trained_data.pkl'
-
-if len(sys.argv) != 3:
-    print('Error! Expected arguments python emailServer.py <spam_detection_host> <spam_detection_port>', file=sys.stderr)
-    exit(0)
 
 with open(TRAINED_DATA_FILE, 'rb') as pickle_file:
     ham_cond_probability, spam_cond_probability, spam_prior, ham_prior, ham_size, spam_size, vocabulary_size, stopwords_list = pickle.load(pickle_file)
 
 
-forward_host = sys.argv[1]
-forward_port = int(sys.argv[2])
+FORWARD_HOST = '0.0.0.0'
+FORWARD_PORT = 9042  # database port
 
 
 SERVER_HOST = "0.0.0.0"
@@ -134,26 +130,49 @@ def isSpam(text):
         spam_probability += spam_cond_probability[word] if word in spam_cond_probability else math.log10(
             1.0 / (spam_size + vocabulary_size))
     if ham_probability > spam_probability:
-        print(f'Ham')
         return False
     else:
-        print(f'Spam')
         return True
 
 
 class serverHandler(socketserver.BaseRequestHandler):
     def handle(self):
-        dataRead = True
         self.data = ''
-        while dataRead:
-            dataRead = self.request.recv(BUFFER_SIZE).decode()
-            self.data += dataRead
-        # print(f'{self.client_address[0]}:{self.client_address[1]} sent a message.')
-        # self.data contains processed email
-        spam = isSpam(self.data)
-        # send self.data + spam to database
+
+        num_spam, num_ham = 0, 0
+
+        while True:
+            # read message size
+            message_size = self.request.recv(7).decode()
+            if len(message_size) > 1:
+                if "END" in message_size:
+                    print(f'Sent {num_ham} ham and {num_spam} spam to database')
+                    num_spam, num_ham = 0, 0
+                    continue
+                # read message
+                dataRead = self.request.recv(int(message_size)).decode()
+                self.data = dataRead
+
+                # get json from message
+                data = json.loads(self.data)
+
+                # calculate spam
+                spam = isSpam(data['email'])
+
+                # form database entry
+                data = {'id': str(time.time()), 'flow_id': str(data['flow_id']), 'sender': '', 'subject': data['subject'], 'content': data['email'],
+                        'is_spam': spam}
+
+                # send to database
+                x = requests.post(f'http://cluster5-2.utdallas.edu:8080/api/addEmail', json=data)  # use json=data to automatically convert and include json header
+                if json.loads(x.text)['success']:
+                    if spam:
+                        num_spam += 1
+                    else:
+                        num_ham += 1
+
 
 
 server = socketserver.TCPServer((SERVER_HOST, SERVER_PORT), serverHandler)
-print('[+] Starting email receiver server')
+print('[+] Starting spam detection server')
 server.serve_forever()
