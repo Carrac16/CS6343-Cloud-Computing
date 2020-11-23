@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<title>Email Stats</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body {font-family: "Lato", sans-serif}
+.mySlides {display: none}
+</style>
+<style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 5px;
+      text-align: left;
+    }
+</style>
+<body>
+
+    <h2 style="text-align: center;">Email Statistics</h2>
+
+    <div style="text-align: center; margin-top: 50px;">
+        Enter flow_id: <input type="text" id="fid"> <button id="sbutton" onclick="getData()">Submit</button>
+    </div>
+    <div style="margin-top: 50px;">
+        <table style="width: 50%; margin: auto;">
+           <tr>
+               <th># of Spam Emails:</th>
+               <td id="tb1"></td>
+           </tr>
+           <tr>
+               <th>Total # of Emails:</th>
+               <td id="tb2"></td>
+           </tr>
+           <tr>
+               <th>Spam Email %:</th>
+               <td id="tb3"></td>
+           </tr>
+           <tr>
+               <th>Avg Spam Email Word Count:</th>
+               <td id="tb4"></td>
+           </tr>
+           <tr>
+               <th>Avg Non-Spam Email Word Count:</th>
+               <td id="tb5"></td>
+           </tr>
+           <tr>
+               <th>Top 10 Common Words in Spam Emails:</th>
+               <td id="tb6"></td>
+           </tr>
+           <tr>
+               <th>Top 10 Common Words in Non-Spam Emails:</th>
+               <td id="tb7"></td>
+           </tr>
+        </table>
+    </div>
+
+    </body>
+
+    <script>
+        let flow_id = '';
+        function getData() {
+            let input = document.getElementById("fid");
+            flow_id = input.value;
+            backend(flow_id);
+            clearInterval();
+            setInterval(function(){
+                backend(flow_id);
+            }, 3*1000);
+        }
+
+        function backend(flow) {
+            fetch('http://localhost:3000/getFlow/'+flow)
+                .then(response => response.json())
+                .then(data => {
+                    // console.log('data: ', data);
+                    if ('error' in data) {
+                        document.getElementById("tb1").innerHTML = '-';
+                        document.getElementById("tb2").innerHTML = '-';
+                        document.getElementById("tb3").innerHTML = '-';
+                        document.getElementById("tb4").innerHTML = '-';
+                        document.getElementById("tb5").innerHTML = '-';
+                        document.getElementById("tb6").innerHTML = '-';
+                        document.getElementById("tb7").innerHTML = '-';
+                    } else {
+                        flow_id = data.flow_id;
+                        document.getElementById("tb1").innerHTML = data.spamCount;
+                        document.getElementById("tb2").innerHTML = data.totalEmails;
+                        document.getElementById("tb3").innerHTML = data.spamPercent + '%';
+                        document.getElementById("tb4").innerHTML = data.spamWC + ' words';
+                        document.getElementById("tb5").innerHTML = data.hamWC + ' words';
+                        document.getElementById("tb6").innerText = data.topSpam;
+                        document.getElementById("tb7").innerText = data.topHam;
+                    }
+                });
+        }
+    </script>
+</html>
