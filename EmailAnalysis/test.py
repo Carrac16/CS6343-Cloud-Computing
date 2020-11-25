@@ -9,17 +9,21 @@ from collections import Counter
 
 app = Flask(__name__)
 
-def process_emails():
-  response = requests.get('http://cluster5-2.utdallas.edu:8080/api/queryEmails')
+counters = {}
+
+def process_emails(flow_id):
+  post_obj = {'flow_id': flow_id}
+  response = requests.post('http://cluster5-2.utdallas.edu:8080/api/queryEmailFlow', data = post_obj)
 
   json_array = json.loads(response.text)
   email_list = []
 
-  return_string = ""
+  return_string = f"Flow: {flow_id}\n"
 
   for item in json_array:
-    email_details = {"id": None, "sender": None, "subject": None, "content": None, "is_spam": None}
+    email_details = {"id": None, "flow_id": None, "sender": None, "subject": None, "content": None, "is_spam": None}
     email_details['id'] = item['id']
+    email_details['flow_id'] = item['flow_id']
     email_details['sender'] = item['sender']
     email_details['subject'] = item['subject']
     email_details['content'] = item['content']
@@ -30,6 +34,8 @@ def process_emails():
   hamCounter = 0
   spamWordCounter = 0
   hamWordCounter = 0
+  top_spam = ""
+  top_ham = ""
 
   if not email_list:
       return "Database is empty\n"
@@ -73,6 +79,7 @@ def process_emails():
   return_string += "the top 10 most common words in spam emails after removing stopwords, and numbers\n"
   for item in sort_orders[:10]:
     return_string += f"{item}\n"
+    top_spam += f"{item}\n"
 
   return_string += "\n"
 
@@ -89,13 +96,34 @@ def process_emails():
   return_string += "the top 10 most common words in normal emails after removing stopwords, and numbers\n"
   for item in sort_orders[:10]:
     return_string += f"{item}\n"
+    top_ham += f"{item}\n"
+
+  webpage_data = {'flow_id': flow_id, 'totalEmails': totalEmails, 'spamCount': spamCounter,
+    'spamPercent': int((spamCounter/totalEmails)*100), 'hamWC': int(hamWordCounter/hamCounter),
+    'spamWC': int(spamWordCounter/spamCounter), 'topSpam': top_spam, 'topHam': top_ham}
+  #send analytics to webpage
+  requests.post('http://cluster5-1.utdallas.edu:3000/flowData', data = webpage_data)
 
   return return_string
 
 
-@app.route('/')
-def get_stats():
-    return process_emails()
+# @app.route('/')
+# def get_stats():
+#     return process_emails()
+
+@app.route('/', methods = ['POST'])
+def get_data():
+  data = requests.json
+  if 'flow_id' in data:
+    flow = data["flow_id"]
+    if flow in counters:
+      counters[flow] += 1
+      if (counters[flow] % 10 == 0):
+        return process_emails(flow)
+    else:
+      counters[flow] = 1
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=6001)
