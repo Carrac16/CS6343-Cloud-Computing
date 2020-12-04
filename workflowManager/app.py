@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from datetime import datetime
 import docker
 from docker.types import EndpointSpec
 from flask import Flask, request
@@ -12,13 +13,18 @@ replicas = 3
 
 deployed_workflows = {}
 
-def deploy_component(component):
+def log(workflow_id, message):
+    timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    print(f"[{timestamp}] {workflow_id} : {message}")
+
+def deploy_component(workflow_id, component):
     endpoint_spec = None
     if "port" in component:
         port = component.pop("port")
         endpoint_spec = EndpointSpec(ports={port:port})
+    log(workflow_id, f"Starting component {component['name']} with {replicas} replicas")
     client.services.create(**component, endpoint_spec=endpoint_spec).scale(replicas=replicas)
-    print(f'Started service {component["image"]} with {replicas} replicas')
+    log(workflow_id, f"Service {component['name']} is now available")
 
 def deployed(object):
     return bool(client.services.list(filters={ "name": object["name"] }))
@@ -53,15 +59,16 @@ def start_workflow():
             entrypoint = workflow['entrypoint']
             reuse = workflow['reuse']
             workflow_list = workflow['components']
-            print(f'workflow list: {workflow_list}')
+            log(workflow_id, f"Workflow requested.")
 
             for component in workflow_list:
                 service = component['service']
                 if not deployed(service) or not reuse:
-                    deploy_component(service)
+                    deploy_component(workflow_id, service)
 
             deployed_workflows[workflow_id] = { "components": workflow_list, "entrypoint": entrypoint }
 
+            log(workflow_id, f"Workflow deployed.")
             return { "workflow_id": workflow_id, "entrypoint": entrypoint }
         
         return { "error": "User must specify a workflow or a workflow ID" }
@@ -74,6 +81,8 @@ def next_service():
 
         workflow_id = data['workflow_id']
         current_service = data['service_name']
+
+        log(workflow_id, f"{current_service} is requesting the next service.")
 
         return str(get_next_services(workflow_id, current_service))
 
