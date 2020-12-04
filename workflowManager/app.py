@@ -57,7 +57,7 @@ def start_workflow():
 
             for component in workflow_list:
                 service = component['service']
-                if not deployed(service) or reuse:
+                if not deployed(service) or not reuse:
                     deploy_component(service)
 
             deployed_workflows[workflow_id] = { "components": workflow_list, "entrypoint": entrypoint }
