@@ -22,6 +22,10 @@ def deploy_component(workflow_id, component):
     if "port" in component:
         port = component.pop("port")
         endpoint_spec = EndpointSpec(ports={port:port})
+    if "publishedPort" in component and "targetPort" in component:
+        publishedPort = component.pop("publishedPort")
+        targetPort = component.pop("targetPort")
+        endpoint_spec = EndpointSpec(ports={publishedPort:targetPort})
     log(workflow_id, f"Starting component {component['name']} with {replicas} replicas")
     client.services.create(**component, endpoint_spec=endpoint_spec).scale(replicas=replicas)
     log(workflow_id, f"Service {component['name']} is now available")
