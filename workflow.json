@@ -1,5 +1,6 @@
 {
   "workflow": {
+    "reuse": true,
     "entrypoint": {
       "address": "http://cluster5-1.utdallas.edu",
       "port": 5001,

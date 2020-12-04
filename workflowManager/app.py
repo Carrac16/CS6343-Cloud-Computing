@@ -51,12 +51,13 @@ def start_workflow():
             workflow = data['workflow']
             workflow_id = str(uuid.uuid4())
             entrypoint = workflow['entrypoint']
+            reuse = workflow['reuse']
             workflow_list = workflow['components']
             print(f'workflow list: {workflow_list}')
 
             for component in workflow_list:
                 service = component['service']
-                if not deployed(service):
+                if not deployed(service) or reuse:
                     deploy_component(service)
 
             deployed_workflows[workflow_id] = { "components": workflow_list, "entrypoint": entrypoint }
