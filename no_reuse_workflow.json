@@ -1,0 +1,70 @@
+{
+  "workflow": {
+    "reuse": false,
+    "entrypoint": {
+      "address": "http://cluster5-1.utdallas.edu",
+      "port": 5011,
+      "endpoint": "/",
+      "requestType": "POST"
+    },
+    "components": [
+      {
+        "service": {
+          "image": "treylewis/emaildbcomp",
+          "name": "email_to_db",
+          "networks": ["attachable_overlay_network"],
+          "port": 8090
+        },
+        "next": []
+      },
+      {
+        "service": {
+          "image": "matthewp76/emailserver",
+          "name": "emailserver",
+          "networks": ["attachable_overlay_network"],
+          "tty": true,
+          "port": 5011
+        },
+        "next": [
+          {
+            "address": "http://cluster5-1.utdallas.edu",
+            "port": 5012,
+            "requestType": "POST"
+          }
+        ]
+      },
+      {
+        "service": {
+          "image": "matthewp76/spamdetection",
+          "name": "spamdetection",
+          "networks": ["attachable_overlay_network"],
+          "tty": true,
+          "port": 5012
+        },
+        "next": [
+          {
+            "address": "http://cluster5-2.utdallas.edu",
+            "port": 8090,
+            "endpoint": "/api/addEmail",
+            "requestType": "POST"
+          },
+          {
+            "address": "http://cluster5-1.utdallas.edu",
+            "port": 6011,
+            "requestType": "POST"
+          }
+        ]
+      },
+      {
+        "service": {
+          "image": "liamlan/email_analysis",
+          "name": "emailanalysis",
+          "networks": ["attachable_overlay_network"],
+          "port": 6011,
+          "mounts": ["/var/run/docker.sock:/var/run/docker.sock:rw"]
+        },
+        "next": []
+      }
+    ]
+  }
+}
