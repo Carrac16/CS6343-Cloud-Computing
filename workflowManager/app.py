@@ -5,6 +5,7 @@ import docker
 from docker.types import EndpointSpec
 from flask import Flask, request
 import uuid
+import re
 
 app = Flask(__name__)
 
@@ -41,6 +42,11 @@ def get_next_services(wfid, current):
     for component in workflow['components']:
         if component['service']['name'] == current:
             return component['next']
+        else: # check if the root of the service name matches, since new services need different names than the old ones
+            reg = re.compile(current+".+")
+            match = bool(re.match(reg, component['service']['name']))
+            if match:
+                return component['next']
 
     return []
 
