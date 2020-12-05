@@ -30,6 +30,7 @@ if not workflow_id:
         data = json.loads(f.read())
     print(f'Requesting workflow')
     x = requests.post(f'http://cluster5-1.utdallas.edu:6000/start', json=data)
+    # print(f'x: {x.text}')
     response = json.loads(x.text)
     print(f'response: {response}')
     entrypoint = response['entrypoint']
@@ -46,6 +47,11 @@ else:
     entrypoint = response
 
 print(f'[+] Open http://cluster5-2.utdallas.edu:3000?flow={workflow_id} to view results')
+
+# send workflow id and number of emails to webpage
+
+x = requests.post(f'http://cluster5-2.utdallas.edu:3000/total', json=json.dumps({'workflow_id': workflow_id, 'total': num_tests}))
+
 
 if entrypoint['requestType'] == 'POST':
     # get address components
