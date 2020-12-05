@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <title>Email Stats</title>
@@ -64,7 +63,17 @@ body {font-family: "Lato", sans-serif}
     </body>
 
     <script>
-        let flow_id = '';
+        let url_string = window.location.href;
+        let url = new URL(url_string);
+        let url_flow = url.searchParams.get("flow");
+
+        let flow_id = (url_flow === null) ? ' ' : url_flow;
+        if (flow_id !== null) {
+            let input = document.getElementById("fid");
+            input.value = flow_id;
+            getData();
+        }
+
         function getData() {
             let input = document.getElementById("fid");
             flow_id = input.value;
@@ -76,7 +85,7 @@ body {font-family: "Lato", sans-serif}
         }
 
         function backend(flow) {
-            fetch('http://localhost:3000/getFlow/'+flow)
+            fetch('/getFlow/'+flow)
                 .then(response => response.json())
                 .then(data => {
                     // console.log('data: ', data);
