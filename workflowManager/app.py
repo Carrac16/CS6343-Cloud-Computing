@@ -14,6 +14,19 @@ replicas = 3
 
 deployed_workflows = {}
 
+def terminate_services(wfid):
+    workflow = deployed_workflows[wfid]
+    if not workflow:
+        return false
+    
+    for component in workflow['components']:
+        serv_name = component['service']['name']
+        service = client.services.list(filters={"name": serv_name})
+        if service:
+            service[0].remove()
+            
+    return true
+
 def log(workflow_id, message):
     timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
     print(f"[{timestamp}] {workflow_id} : {message}")
@@ -95,6 +108,18 @@ def next_service():
         log(workflow_id, f"{current_service} is requesting the next service.")
 
         return str(get_next_services(workflow_id, current_service))
+        
+@app.route('/terminate', methods=['POST'])
+def terminate():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        workflow_id = data['workflow_id']
+        success = terminate_services(workflow_id)
+        if success:
+            log(workflow_id, f"Workflow {workflow_id} terminated.")
+        
+        return {"success": success}
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=6000)
