@@ -17,7 +17,7 @@ deployed_workflows = {}
 def terminate_services(wfid):
     workflow = deployed_workflows[wfid]
     if not workflow:
-        return false
+        return {"success": False}
     
     for component in workflow['components']:
         serv_name = component['service']['name']
@@ -25,7 +25,7 @@ def terminate_services(wfid):
         if service:
             service[0].remove()
             
-    return true
+    return {"success": True}
 
 def log(workflow_id, message):
     timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
