@@ -49,8 +49,10 @@ else:
 print(f'[+] Open http://cluster5-2.utdallas.edu:3000?flow={workflow_id} to view results')
 
 # send workflow id and number of emails to webpage
+with open(workflow_filename, 'r') as f:
+        data = json.loads(f.read())
 
-webpage_data = {'workflow_id': workflow_id, 'total': num_tests}
+webpage_data = {'workflow_id': workflow_id, 'total': num_tests, 'reuse': data['reuse']}
 
 x = requests.post(f'http://cluster5-2.utdallas.edu:3000/total', json = webpage_data)
 
