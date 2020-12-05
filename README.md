@@ -8,7 +8,7 @@ Repository to work on project workflow
 
 - Email Client
 
-   * docker run --rm -it -v <path to workflow.json>:/workflow.json --network attachable_overlay_network matthewp76/emailclient <# emails> <workflow id (optional)>
+   * docker run --rm -it -v \<path to workflow.json>:/workflow.json --network attachable_overlay_network matthewp76/emailclient <# emails> <workflow id (optional)>
 
 - Email Server
 

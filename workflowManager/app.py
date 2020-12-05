@@ -64,6 +64,10 @@ def get_next_services(wfid, current):
     return []
 
 
+@app.route('/')
+def list_workflows():
+    return deployed_workflows
+
 @app.route('/start', methods=['POST'])
 def start_workflow():
     if request.method == 'POST':
