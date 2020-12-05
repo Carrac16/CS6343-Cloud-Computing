@@ -52,7 +52,7 @@ print(f'[+] Open http://cluster5-2.utdallas.edu:3000?flow={workflow_id} to view 
 with open(workflow_filename, 'r') as f:
         data = json.loads(f.read())
 
-webpage_data = {'workflow_id': workflow_id, 'total': num_tests, 'reuse': data['reuse']}
+webpage_data = {'workflow_id': workflow_id, 'total': num_tests, 'reuse': data['workflow']['reuse']}
 
 x = requests.post(f'http://cluster5-2.utdallas.edu:3000/total', json = webpage_data)
 
