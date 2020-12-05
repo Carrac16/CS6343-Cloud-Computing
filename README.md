@@ -1,5 +1,5 @@
 # CS6343
-repository to work on project workflow
+Repository to work on project workflow
 
 ## Docker service commands
 - Workflow manager
