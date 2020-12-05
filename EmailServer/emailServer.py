@@ -68,8 +68,8 @@ def recieve_email():
     if request.method == 'POST':
         data = request.get_json(force=True)  # always try to parse data as JSON
         data = json.loads(str(data))
-        workflow_id = data['workflow']
-        text = data['email']
+        workflow_id = data['flow_id']
+        text = data['content']
 
         # do text processing on email
         subject, text = processEmail(text.encode())

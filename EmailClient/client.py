@@ -45,6 +45,8 @@ else:
     print(f'response: {response}')
     entrypoint = response
 
+print(f'[+] Open http://cluster5-2.utdallas.edu:3000?flow={workflow_id} to view results')
+
 if entrypoint['requestType'] == 'POST':
     # get address components
     forward_host = entrypoint['address']
@@ -61,7 +63,7 @@ for _ in range(num_tests):
     filename = f'./test_data/{file_dir}/{random.choice(os.listdir("./test_data/" + file_dir))}'
 
     with open(filename, 'r', errors='ignore') as f:
-        file_content = json.dumps({'workflow': workflow_id, 'email': f.read()})
+        file_content = json.dumps({'flow_id': workflow_id, 'content': f.read()})
 
         # send to first component
         success = False
@@ -75,4 +77,3 @@ for _ in range(num_tests):
 
 
 print(f'[+] Sent {num_ham} ham, {num_spam} spam tests on workflow {workflow_id}')
-print(f'[+] Open http://cluster5-2.utdallas.edu:3000?flow={workflow_id} to view results')
