@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from flask import Flask
+from flask import Flask, request
 import requests
 import json
 import time
@@ -102,7 +102,8 @@ def process_emails(flow_id):
     'spamPercent': int((spamCounter/totalEmails)*100), 'hamWC': int(hamWordCounter/hamCounter),
     'spamWC': int(spamWordCounter/spamCounter), 'topSpam': top_spam, 'topHam': top_ham}
   #send analytics to webpage
-  requests.post('http://cluster5-1.utdallas.edu:3000/flowData', data = webpage_data)
+  print("sending data to webpage")
+  requests.post('http://cluster5-2.utdallas.edu:3000/flowData', json = webpage_data)
 
   return return_string
 
@@ -113,16 +114,23 @@ def process_emails(flow_id):
 
 @app.route('/', methods = ['POST'])
 def get_data():
-  data = requests.json
-  if 'flow_id' in data:
-    flow = data["flow_id"]
-    if flow in counters:
-      counters[flow] += 1
-      if (counters[flow] % 10 == 0):
-        return process_emails(flow)
+  if request.method == 'POST':
+    data = request.get_json(force=True)
+    if 'flow_id' in data:
+      flow = data["flow_id"]
+      if flow in counters:
+        counters[flow] += 1
+        if (counters[flow] % 10 == 0):
+          return process_emails(flow)
+        else:
+          return "counting emails\n"
+      else:
+        counters[flow] = 1
+        return "workflow added to counter\n"
     else:
-      counters[flow] = 1
-
+      return "Data is not formatted correctly. JSON must contain property: flow_id\n"
+  else:
+    return "not a POST request\n"
 
 
 if __name__ == '__main__':
