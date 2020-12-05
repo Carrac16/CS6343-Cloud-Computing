@@ -28,7 +28,7 @@ def terminate_services(wfid):
     return true
 
 def log(workflow_id, message):
-    timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    timestamp = datetime.now().timestamp()
     print(f"[{timestamp}] {workflow_id} : {message}")
 
 def deploy_component(workflow_id, component):
