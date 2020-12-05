@@ -10,6 +10,14 @@ Repository to work on project workflow
 
    * docker run --rm -it -v <path to workflow.json>:/workflow.json --network attachable_overlay_network matthewp76/emailclient <# emails> <workflow id (optional)>
 
+- Email Server
+
+   * docker service create -dt --network attachable_overlay_network --replicas 3 -p 5001:5001 --name emailserver matthewp76/emailserver
+
+- Spam Detector
+
+   * docker service create -dt --network attachable_overlay_network --replicas 3 -p 5002:5002 --name spamdetection matthewp76/spamdetection
+
 
 ## Database commands
 
